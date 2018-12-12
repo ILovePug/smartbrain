@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { APIUrl } from '../../keys'
 class Register extends React.Component {
   constructor(props) {
     super(props);
@@ -23,7 +23,7 @@ class Register extends React.Component {
   }
 
   onSubmitSignIn = () => {
-    fetch('http://localhost:3000/register', {
+    fetch(APIUrl + '/register', {
       method: 'post',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({

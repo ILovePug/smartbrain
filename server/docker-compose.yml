@@ -1,0 +1,20 @@
+version: '3.6'
+services:
+  smart-brain-api: 
+    container_name: backend
+    build: ./ #auto execute Dockerfile
+    environment:
+      - PGURI=postgres://sally:secret@postgres:5432/smart-brain
+    ports: 
+      - "3000:3000"
+    volumes:
+      - ./:/usr/src/smart-brain-api
+  postgres:
+    environment: #setting those in postgres image level will auto create new credential
+      - POSTGRES_USER=sally 
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_HOST=postgres 
+      - POSTGRES_DB=smart-brain 
+    build: ./postgres
+    ports:
+      - "5432:5432"
