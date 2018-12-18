@@ -5,6 +5,7 @@ services:
     build: ./ #auto execute Dockerfile
     environment:
       - PGURI=postgres://sally:secret@postgres:5432/smart-brain
+      - REDISURI=redis://redis:6379
     ports: 
       - "3000:3000"
     volumes:
@@ -18,3 +19,7 @@ services:
     build: ./postgres
     ports:
       - "5432:5432"
+  redis:
+    image: 'redis'
+    ports: 
+    - "6379:6379"

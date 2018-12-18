@@ -45,6 +45,40 @@ class App extends Component {
     this.state = initialState;
   }
 
+  componentDidMount(){
+    const token = window.sessionStorage.getItem('token')
+    if(token){
+      fetch(APIUrl + '/signin', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data && data.id) {
+            fetch(APIUrl + '/profile/' + data.id, {
+              method: 'get',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+              }
+            })
+            .then(resp=>resp.json())
+              .then(user=>{
+                if(user && user.email){
+                  this.loadUser(user)
+                  this.onRouteChange('home')
+                }
+              })
+        
+          }
+        })
+        .catch(console.log)
+    }
+  }
+
   loadUser = data => {
     this.setState({
       user: {
@@ -58,7 +92,8 @@ class App extends Component {
   };
 
   calculateFaceLocation = data => {
-    const clarifaiFace =
+    if(data && data.outputs){
+      const clarifaiFace =
       data.outputs[0].data.regions[0].region_info.bounding_box;
     const image = document.getElementById("inputimage");
     const width = Number(image.width);
@@ -69,9 +104,13 @@ class App extends Component {
       rightCol: width - clarifaiFace.right_col * width,
       bottomRow: height - clarifaiFace.bottom_row * height
     };
+    }
+    return
+
   };
 
   displayFaceBox = box => {
+    if(!box) return;
     this.setState({ box: box });
   };
 
@@ -83,7 +122,7 @@ class App extends Component {
     this.setState({ imageUrl: this.state.input });
     fetch(APIUrl + "/imageurl", {
       method: "post",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json",'Authorization': window.sessionStorage.getItem('token') },
       body: JSON.stringify({
         input: this.state.input
       })
@@ -93,7 +132,7 @@ class App extends Component {
         if (response) {
           fetch(APIUrl + "/image", {
             method: "put",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json",'Authorization': window.sessionStorage.getItem('token') },
             body: JSON.stringify({
               id: this.state.user.id
             })
@@ -122,7 +161,7 @@ class App extends Component {
     this.setState(prevState=>({isProfileOpen: !prevState.isProfileOpen}))
   }
   render() {
-    const { isSignedIn, imageUrl, route, box, isProfileOpen } = this.state;
+    const { isSignedIn, imageUrl, route, box, isProfileOpen,user } = this.state;
     return (
       <div className="App">
         <Particles className="particles" params={particlesOptions} />
@@ -132,7 +171,7 @@ class App extends Component {
           toggleModal={this.toggleModal}
         />
         {isProfileOpen && <Modal>
-            <Profile isProfileOpen={isProfileOpen} toggleModal={this.toggleModal} />
+            <Profile loadUser={this.loadUser} user={user} isProfileOpen={isProfileOpen} toggleModal={this.toggleModal} />
         </Modal>}
         {route === "home" ? (
           <div>
